@@ -14,15 +14,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Cypress run
-        uses: cypress-io/github-action@v2
-        with:
-          record: true
-          parallel: true
-          group: 'Smoke-tests'
+      - name: Install Cypress
+        run: npm install
         env:
           # pass the Dashboard record key as an environment variable
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
       - name: Run Cypress tests
-        run: npm run cypress:run:record
+        run: npx cypress run --record --parallel --group smoke-tests --env configFile=test --spec 'cypress/integration/**/*.feature'
