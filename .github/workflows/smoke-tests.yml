@@ -1,31 +1,28 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
-
-name: Node.js CI
-
+name: Run tests
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
-
+  workflow_dispatch:
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
+  cypress-test:
+    name: Run on Chrome 83
+    runs-on: ubuntu-18.04
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
+        # the actual items in the array do not matter,
+        # just the number - to force CI to sping 3 copies
+        # of the current job in parallel
+        machines: [1, 2, 3]
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v2
+        with:
+          record: true
+          parallel: true
+          group: 'Smoke-tests'
+        env:
+          # pass the Dashboard record key as an environment variable
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+      - name: Run Cypress tests
+        run: npm run cypress:run:record
